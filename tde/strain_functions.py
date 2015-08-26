@@ -2,20 +2,57 @@ from __future__ import division
 from numpy import sin, cos, pi, tan
 
 
+#try:
+#    import numexpr as ne
+#    ne_flag = True
+#except ImportError:
+#    ne_flag = False
+#    pass
+
+try:
+    from numba import jit, vectorize, float64
+    nu_flag = True
+except:
+    nu_flag = False
+    pass
+
+try:
+    from numbapro import jit, vectorize, float64
+    nb_flag = True
+except:
+    nb_flag = False
+    pass
+
+
 
 def advs(y1, y2, y3, a, b, nu, B1, B2, B3):
-    a = {}
 
-    a['11'] = e11(y1, y2, y3, a, b, nu, B1, B2, B3)
-    a['22'] = e22(y1, y2, y3, a, b, nu, B1, B2, B3)
-    a['33'] = e33(y1, y2, y3, a, b, nu, B1, B2, B3)
-    a['12'] = e12(y1, y2, y3, a, b, nu, B1, B2, B3)
-    a['13'] = e13(y1, y2, y3, a, b, nu, B1, B2, B3)
-    a['23'] = e23(y1, y2, y3, a, b, nu, B1, B2, B3)
+    #locs = locals()
 
-    return a
+    #for arg, val in locs.items():
+    #    try:
+    #        print(arg, val.dtype)
+    #    except AttributeError:
+    #        print(arg, type(val))
+
+    A = {}
+
+    A['11'] = e11(y1, y2, y3, a, b, nu, B1, B2, B3)
+    A['22'] = e22(y1, y2, y3, a, b, nu, B1, B2, B3)
+    A['33'] = e33(y1, y2, y3, a, b, nu, B1, B2, B3)
+    A['12'] = e12(y1, y2, y3, a, b, nu, B1, B2, B3)
+    A['13'] = e13(y1, y2, y3, a, b, nu, B1, B2, B3)
+    A['23'] = e23(y1, y2, y3, a, b, nu, B1, B2, B3)
+
+    return A
+
+if nb_flag == True:
+    pass
 
 
+
+#@vectorize([float64(float64,float64,float64,float64,float64,float64,float64,
+#                   float64,float64)])
 def e11(y1, y2, y3, a, b, nu, B1, B2, B3):
     e11 = (B1 * (1 / 8 * ((2-2 * nu) * (2 * y2 / y1**2 / (1+y2**2 / y1**2)-y2 /
                         (y1 * cos(b)-y3 * sin(b))**2 * cos(b) /

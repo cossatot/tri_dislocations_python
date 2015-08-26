@@ -4,19 +4,6 @@ from numpy import sin, cos, pi
 
 import strain_functions as sf
 
-try:
-    import numexpr as ne
-    ne_flag = True
-except ImportError:
-    ne_flag = False
-    pass
-
-try:
-    from numba import jit, vectorize
-    nu_flag = True
-except:
-    nu_flag = False
-    pass
 
 #Vec = namedtuple('Vec', ['xx','yy','zz','xy','xz','yz'])
 
@@ -32,7 +19,7 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
     docs
     '''
 
-    slip_vec = calc_slip_vector(x, y, z)
+    slip_vec = calc_slip_vector(x, y, z, ss, ts, ds)
 
     S = {
         'xx': np.zeros(len(sx)),
@@ -48,12 +35,14 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
     z = np.append(z, z[0])
 
     for i_tri in [0, 1, 2]:
-        strike, dip, lss, ts, lds = get_edge_params(i_tri, x, y, z, slip_vec)
+        strike, dip, beta, lss, lts, lds = get_edge_params(i_tri, x, y, z, 
+                                                          slip_vec)
+        
         e = get_edge_strains(sx, sy, sz, x, y, z, i_tri, beta, pr, lss, lts,
                              lds, strike)
-        
+
         S['xx'] += e['11']
-        S['xy'] += e['22']
+        S['yy'] += e['22']
         S['zz'] += e['33']
         S['xy'] += e['12']
         S['xz'] += e['13']
@@ -69,7 +58,8 @@ def calc_slip_vector(x, y, z, ss=0., ts=0., ds=0.):
     v2 = np.array([x[2], y[2], z[2]])
 
     norm_vec = np.cross( (v1 - v0), (v2 - v0))
-    norm_vec /= np.linalg.norm(norm_vec)
+    norm_vec = norm_vec / np.linalg.norm(norm_vec)
+
 
     if norm_vec[2] < 0: # Enforce clockwise circulation
         norm_vec *= -1
@@ -81,7 +71,8 @@ def calc_slip_vector(x, y, z, ss=0., ts=0., ds=0.):
                             np.cos( np.arctan2( norm_vec[1], norm_vec[0])), 0])
     dip_vec = np.cross( norm_vec, strike_vec)
     slip_comp = np.array([ss, ds, ts])
-    slip_vec = np.array([strike_vec[:], dip_vec[:], norm_vec[:]]).dot(slip_comp)
+    slip_vec = np.array([strike_vec.ravel(order='F'), dip_vec.ravel(order='F'), 
+                         norm_vec.ravel(order='F')]).dot(slip_comp)
 
     return slip_vec
 
@@ -116,10 +107,11 @@ def get_edge_params(i_tri, x, y, z, slip_vec):
     lts = np.dot(slip_vec, ts_vec)
     lds = np.dot(slip_vec, ds_vec)
 
-    return strike, dip, lss, lts, lds
+    return strike, dip, beta, lss, lts, lds
 
-def get_edge_strains():
-
+def get_edge_strains(sx, sy, sz, x, y, z, i_tri, beta, pr, lss, lts,lds, 
+                     strike):
+    
     sx1, sy1 = rotate_xy_vec(sx-x[i_tri], sy-y[i_tri], -strike)
     a = sf.advs(sx1, sy1, sz-z[i_tri], z[i_tri], beta, pr, lss, lts, lds)
 
