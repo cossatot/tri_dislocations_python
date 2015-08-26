@@ -43,12 +43,21 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
         'yz': np.zeros(len(sx)),
     }
 
-    x = np.append(x, x[0])
+    x = np.append(x, x[0]) # for indexing during loops
     y = np.append(y, y[0])
     z = np.append(z, z[0])
 
     for i_tri in [0, 1, 2]:
         strike, dip, lss, ts, lds = get_edge_params(i_tri, x, y, z, slip_vec)
+        e = get_edge_strains(sx, sy, sz, x, y, z, i_tri, beta, pr, lss, lts,
+                             lds, strike)
+        
+        S['xx'] += e['11']
+        S['xy'] += e['22']
+        S['zz'] += e['33']
+        S['xy'] += e['12']
+        S['xz'] += e['13']
+        S['yz'] += e['23']
 
     return S
 
@@ -59,7 +68,7 @@ def calc_slip_vector(x, y, z, ss=0., ts=0., ds=0.):
     v1 = np.array([x[1], y[1], z[1]])
     v2 = np.array([x[2], y[2], z[2]])
 
-    norm_vec = np.cross( (v1 - v0), (v2-v0))
+    norm_vec = np.cross( (v1 - v0), (v2 - v0))
     norm_vec /= np.linalg.norm(norm_vec)
 
     if norm_vec[2] < 0: # Enforce clockwise circulation
@@ -112,8 +121,34 @@ def get_edge_params(i_tri, x, y, z, slip_vec):
 def get_edge_strains():
 
     sx1, sy1 = rotate_xy_vec(sx-x[i_tri], sy-y[i_tri], -strike)
-    
+    a = sf.advs(sx1, sy1, sz-z[i_tri], z[i_tri], beta, pr, lss, lts, lds)
 
+    sx2, sy2 = rotate_xy_vec(sx-x[i_tri+1], sy-y[i_tri+1], -strike)
+    b = sf.advs(sx2, sy2, sz-z[i_tri+1], z[i_tri+1], beta, pr, lss, lts, lds)
+
+    bxx = a['11']-b['11'] 
+    byy = a['22']-b['22'] 
+    bzz = a['33']-b['33'] 
+    bxy = a['12']-b['12'] 
+    bxz = a['13']-b['13'] 
+    byz = a['23']-b['23'] 
+
+    g = np.pi / 180. * strike
+
+    e = {}
+
+    e['11'] = ((np.cos(g) * bxx - np.sin(g) * bxy) * np.cos(g) -
+               (np.cos(g) * bxy - np.sin(g) * byy) * np.sin(g))
+    e['12'] = ((np.cos(g) * bxx - np.sin(g) * bxy) * np.sin(g) +
+               (np.cos(g) * bxy - np.sin(g) * byy) * np.cos(g))
+    e['13'] = np.cos(g) * bxz - np.sin(g) * byz
+    e['22'] = ((np.sin(g) * bxx + np.cos(g) * bxy) * np.sin(g) +
+               (np.sin(g) * bxy + np.cos(g) * byy) * np.cos(g))
+    e['23'] = np.sin(g) * bxz + np.cos(g) * byz
+    e['33'] = bzz
+
+    return e
+               
 
 
 def rotate_xy_vec(x, y, alpha):
@@ -124,32 +159,5 @@ def rotate_xy_vec(x, y, alpha):
     yp = np.sin(alpha_rad) * x + np.cos(alpha_rad) * y
 
     return xp, yp
-
-def advs(y1, y2, y3, a, b, nu, B1, B2, B3):
-    
-
-    E = {
-        'e11': 0.,
-        'e22': 0.,
-        'e33': 0.,
-        'e12': 0.,
-        'e13': 0.,
-        'e23': 0.
-    }
-    return E
-
-
-'''
-.* -> _*_ (_ is space)
-./ -> _/_ (_ is space)
-.^ -> ** 
-sin -> np.sin
-cos -> np.cos
-pi -> np.pi
-'''
-
-def cot(x):
-    return 1 / np.tan(x)
-
 
 
