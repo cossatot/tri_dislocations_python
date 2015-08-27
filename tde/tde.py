@@ -3,7 +3,21 @@ import numpy as np
 from numpy import sin, cos, pi
 
 import strain_functions as sf
+import disp_functions as df
 
+
+'''
+Functions modified from Brendan Meade's "tde" MATLAB routines
+(https://github.com/brendanjmeade/tde) detailed in
+Computers and Geosciences (2006).
+
+I would love to have more thorough documentation but I didn't spend the time
+to follow the derivation well enough to know what is really going on. In
+most cases, names of variables, functions and so forth either follow
+directly from Meade's code, or is a guess of mine what is going on.
+
+Ported by Richard Styron, 2015)
+'''
 
 #Vec = namedtuple('Vec', ['xx','yy','zz','xy','xz','yz'])
 
@@ -27,7 +41,7 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
         'zz': np.zeros(len(sx)),
         'xy': np.zeros(len(sx)),
         'xz': np.zeros(len(sx)),
-        'yz': np.zeros(len(sx)),
+        'yz': np.zeros(len(sx))
     }
 
     x = np.append(x, x[0]) # for indexing during loops
@@ -49,6 +63,41 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
         S['yz'] += e['23']
 
     return S
+
+
+def calc_tri_displacements(sx=None, sy=None, sz=None, x=None, y=None, z=None, 
+                           pr=0.25, ss=0., ts=0., ds=0.):
+    '''
+    docs
+    '''
+
+    slip_vec = calc_slip_vector(x, y, z, ss, ts, ds)
+
+    U = {
+        'x': np.zeros(len(sx)),
+        'y': np.zeros(len(sx)),
+        'z': np.zeros(len(sx))
+    }
+
+    x = np.append(x, x[0]) # for indexing during loops
+    y = np.append(y, y[0])
+    z = np.append(z, z[0])
+
+    for i_tri in [0, 1, 2]:
+        strike, dip, beta, lss, lts, lds = get_edge_params(i_tri, x, y, z, 
+                                                          slip_vec)
+        
+        uxn, uyn, uzn= get_edge_displacements(sx, sy, sz, x, y, z, i_tri, beta, 
+                                              pr, lss, lts, lds, strike)
+
+        U['x'] += uxn
+        U['y'] += uyn
+        U['z'] += uzn
+
+    U = offset_underlying_points(x, y, z, sx, sy, sz, slip_vec, U)
+
+    return U
+
 
 
 def calc_slip_vector(x, y, z, ss=0., ts=0., ds=0.):
@@ -109,6 +158,7 @@ def get_edge_params(i_tri, x, y, z, slip_vec):
 
     return strike, dip, beta, lss, lts, lds
 
+
 def get_edge_strains(sx, sy, sz, x, y, z, i_tri, beta, pr, lss, lts,lds, 
                      strike):
     
@@ -142,6 +192,22 @@ def get_edge_strains(sx, sy, sz, x, y, z, i_tri, beta, pr, lss, lts,lds,
     return e
                
 
+def get_edge_displacements(sx, sy, sz, x, y, z, i_tri, beta, pr, lss, lts,lds, 
+                           strike):
+
+    sx1, sy1 = rotate_xy_vec(sx-x[i_tri], sy-y[i_tri], -strike)
+    ux1, uy1, uz1 = df.adv(sx1, sy1, sz-z[i_tri], z[i_tri], beta, pr, lss, lts, 
+                           lds)
+
+    sx2, sy2 = rotate_xy_vec(sx-x[i_tri+1], sy-y[i_tri+1], -strike)
+    ux2, uy2, uz2 = df.adv(sx2, sy2, sz-z[i_tri+1], z[i_tri+1], beta, pr, lss, 
+                           lts, lds)
+
+    uxn, uyn = rotate_xy_vec((ux1 - ux2), (uy1-uy2), strike)
+    uzn = uz1 - uz2
+
+    return uxn, uyn, uzn
+    
 
 def rotate_xy_vec(x, y, alpha):
     '''Rotates a vector by an ange alpha'''
@@ -152,4 +218,69 @@ def rotate_xy_vec(x, y, alpha):
 
     return xp, yp
 
+def offset_underlying_points(x, y, z, sx, sy, sz, slip_vec, U):
 
+    poly = list(zip(x,y))
+
+    for i in range(len(sx)):
+        xi, yi, zi = sx[i], sy[i], sz[i]
+
+        if line_plane_intersect(x, y, z, xi, yi, zi)[2] < 0:
+            if point_in_poly(xi, yi, poly):
+                U['x'][i] -= slip_vec[0]
+                U['y'][i] -= slip_vec[1]
+                U['z'][i] -= slip_vec[2]
+    return U
+
+
+def point_in_poly(x,y,poly):
+    # from http://www.ariel.com.au/a/python-point-int-poly.html
+
+    n = len(poly)
+    inside = False
+
+    p1x,p1y = poly[0]
+    for i in range(n+1):
+        p2x,p2y = poly[i % n]
+        if y > min(p1y,p2y):
+            if y <= max(p1y,p2y):
+                if x <= max(p1x,p2x):
+                    if p1y != p2y:
+                        xints = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                    if p1x == p2x or x <= xints:
+                        inside = not inside
+        p1x,p1y = p2x,p2y
+
+    return inside
+
+
+def line_plane_intersect(x, y, z, sx, sy, sz):
+    '''
+    Calculate the intersection of a line and a plane using a parametric
+    representation of the plane. This is hardcoded for a vertical line.
+    '''
+
+    numerator = np.array([[1., 1., 1., 1.],
+                          [x[0], x[1], x[2], sx],
+                          [y[0], y[1], y[2], sy],
+                          [z[0], z[1], z[2], sz]])
+
+    numerator = np.linalg.det(numerator)
+
+    denominator = np.array([[1., 1., 1., 1.],
+                            [x[0], x[1], x[2], 0],
+                            [y[0], y[1], y[2], 0],
+                            [z[0], z[1], z[2], -sz]])
+
+    denominator = np.linalg.det(denominator)
+
+    if denominator == 0:
+        denominator = np.spacing(1)
+
+    t = numerator / denominator
+    d = np.array([sx, sy, sz]) - t * (np.array([sx, sy, 0])- 
+                                      np.array([sx, sy, sz]))
+    return d
+
+ 
+                          

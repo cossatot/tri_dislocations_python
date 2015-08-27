@@ -19,4 +19,7 @@ Z = np.array([0., 0., 20.])
 S = tde.calc_tri_strains(sx.ravel(order='F'), sy.ravel(order='F'), 
                          sz.ravel(order='F'), X, Y, Z, pr, ss, ts, ds)
 
+U = tde.calc_tri_displacements(sx.ravel(order='F'), sy.ravel(order='F'), 
+                               sz.ravel(order='F'), X, Y, Z, pr, ss, ts, ds)
+
 
