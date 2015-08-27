@@ -16,7 +16,7 @@ to follow the derivation well enough to know what is really going on. In
 most cases, names of variables, functions and so forth either follow
 directly from Meade's code, or is a guess of mine what is going on.
 
-Ported by Richard Styron, 2015)
+Ported by Richard Styron, 2015
 '''
 
 #Vec = namedtuple('Vec', ['xx','yy','zz','xy','xz','yz'])
@@ -30,7 +30,39 @@ def swap(a, b):
 def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None, 
                      z=None, pr=0.25, ss=0., ts=0., ds=0.):
     '''
-    docs
+    Calculates strains due to slip on a triangular dislocation in an
+    elastic half space utilizing the symbolically differentiated
+    displacement gradient tensor derived from the expressions for
+    the displacements due to an angular dislocation in an elastic half
+    space (Comninou and Dunders, 1975).
+    
+    Arguments
+     sx : x-coordinates of observation points
+     sy : y-coordinates of observation points
+     sz : z-coordinates of observation points
+     x  : x-coordinates of triangle vertices.
+     y  : y-coordinates of triangle vertices.
+     z  : z-coordinates of triangle vertices.
+     pr : Poisson's ratio
+     ss : strike slip displacement
+     ts : tensile slip displacement
+     ds : dip slip displacement
+    
+    Returns
+     S  : structure containing the strains (S.xx, S.yy, S.zz, S.xy, S.xz, S.yz)
+    
+    This paper should and related code should be cited as:
+    Brendan J. Meade, Algorithms for the calculation of exact 
+    displacements, strains, and stresses for Triangular Dislocation 
+    Elements in a uniform elastic half space, Computers & 
+    Geosciences (2007), doi:10.1016/j.cageo.2006.12.003.
+    
+    Use at your own risk and please let me know of any bugs/errors.
+    
+    Copyright (c) 2006 Brendan Meade
+
+    Ported to Python by Richard Styron 2015.
+
     '''
 
     slip_vec = calc_slip_vector(x, y, z, ss, ts, ds)
@@ -68,7 +100,36 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
 def calc_tri_displacements(sx=None, sy=None, sz=None, x=None, y=None, z=None, 
                            pr=0.25, ss=0., ts=0., ds=0.):
     '''
-    docs
+    Calculates displacements due to slip on a triangular dislocation in an
+    elastic half space utilizing the Comninou and Dunders (1975) expressions
+    for the displacements due to an angular dislocation in an elastic half
+    space.
+    
+    Arguments
+     sx : x-coordinates of observation points
+     sy : y-coordinates of observation points
+     sz : z-coordinates of observation points
+     x  : x-coordinates of triangle vertices.
+     y  : y-coordinates of triangle vertices.
+     z  : z-coordinates of triangle vertices.
+     pr : Poisson's ratio
+     ss : strike slip displacement
+     ts : tensile slip displacement
+     ds : dip slip displacement
+    
+    Returns
+     U  : Dictionary containing the displacements (U['x'], U['y'], U['z'])
+    
+    This paper should and related code should be cited as:
+    Brendan J. Meade, Algorithms for the calculation of exact 
+    displacements, strains, and stresses for Triangular Dislocation 
+    Elements in a uniform elastic half space, Computers & 
+    Geosciences (2007), doi:10.1016/j.cageo.2006.12.003.
+
+    That code Copyright (c) 2006 Brendan Meade
+
+    Ported to Python by Richard Styron, Aug 2015
+
     '''
 
     slip_vec = calc_slip_vector(x, y, z, ss, ts, ds)
@@ -85,7 +146,7 @@ def calc_tri_displacements(sx=None, sy=None, sz=None, x=None, y=None, z=None,
 
     for i_tri in [0, 1, 2]:
         strike, dip, beta, lss, lts, lds = get_edge_params(i_tri, x, y, z, 
-                                                          slip_vec)
+                                                           slip_vec)
         
         uxn, uyn, uzn= get_edge_displacements(sx, sy, sz, x, y, z, i_tri, beta, 
                                               pr, lss, lts, lds, strike)
@@ -217,6 +278,7 @@ def rotate_xy_vec(x, y, alpha):
     yp = np.sin(alpha_rad) * x + np.cos(alpha_rad) * y
 
     return xp, yp
+
 
 def offset_underlying_points(x, y, z, sx, sy, sz, slip_vec, U):
 

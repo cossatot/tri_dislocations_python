@@ -13,11 +13,13 @@ def adv(y1, y2, y3, a, beta, nu, B1, B2, B3):
 
     z1 = y1 * cosbeta - y3 * sinbeta
     z3 = y1 * sinbeta + y3 * cosbeta
-    R = np.linalg.norm((y1, y2, y3))
+    R2 = y1**2 + y2**2 + y3**2
+    R = np.sqrt(R2)
     y3bar = y3 + 2. * a
     z1bar = y1 * cosbeta + y3bar * sinbeta
     z3bar = -y1 * sinbeta + y3bar * cosbeta
-    Rbar = np.linalg.norm((y1, y2, y3bar))
+    R2bar = y1**2 + y2**2 + y3bar**2
+    Rbar = np.sqrt(R2bar)
 
     F = (-np.arctan2(y2, y1) + np.arctan2(y2, z1) + 
          np.arctan2( (y2 * R * sinbeta), (y1 * z1 + (y2**2) * cosbeta)))
