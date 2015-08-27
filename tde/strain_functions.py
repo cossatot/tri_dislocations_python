@@ -24,16 +24,7 @@ except:
     pass
 
 
-
 def advs(y1, y2, y3, a, b, nu, B1, B2, B3):
-
-    #locs = locals()
-
-    #for arg, val in locs.items():
-    #    try:
-    #        print(arg, val.dtype)
-    #    except AttributeError:
-    #        print(arg, type(val))
 
     A = {}
 
@@ -50,9 +41,6 @@ if nb_flag == True:
     pass
 
 
-
-#@vectorize([float64(float64,float64,float64,float64,float64,float64,float64,
-#                   float64,float64)])
 def e11(y1, y2, y3, a, b, nu, B1, B2, B3):
     e11 = (B1 * (1 / 8 * ((2-2 * nu) * (2 * y2 / y1**2 / (1+y2**2 / y1**2)-y2 /
                         (y1 * cos(b)-y3 * sin(b))**2 * cos(b) /

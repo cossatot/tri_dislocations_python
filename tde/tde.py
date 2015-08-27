@@ -49,7 +49,7 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
      ds : dip slip displacement
     
     Returns
-     S  : structure containing the strains (S.xx, S.yy, S.zz, S.xy, S.xz, S.yz)
+     E  : structure containing the strains (E.xx, E.yy, E.zz, E.xy, E.xz, E.yz)
     
     This paper should and related code should be cited as:
     Brendan J. Meade, Algorithms for the calculation of exact 
@@ -67,7 +67,7 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
 
     slip_vec = calc_slip_vector(x, y, z, ss, ts, ds)
 
-    S = {
+    E = {
         'xx': np.zeros(len(sx)),
         'yy': np.zeros(len(sx)),
         'zz': np.zeros(len(sx)),
@@ -87,14 +87,14 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
         e = get_edge_strains(sx, sy, sz, x, y, z, i_tri, beta, pr, lss, lts,
                              lds, strike)
 
-        S['xx'] += e['11']
-        S['yy'] += e['22']
-        S['zz'] += e['33']
-        S['xy'] += e['12']
-        S['xz'] += e['13']
-        S['yz'] += e['23']
+        E['xx'] += e['11']
+        E['yy'] += e['22']
+        E['zz'] += e['33']
+        E['xy'] += e['12']
+        E['xz'] += e['13']
+        E['yz'] += e['23']
 
-    return S
+    return E
 
 
 def calc_tri_displacements(sx=None, sy=None, sz=None, x=None, y=None, z=None, 
@@ -346,3 +346,26 @@ def line_plane_intersect(x, y, z, sx, sy, sz):
 
  
                           
+def strain_to_stress(E, lamda, mu):
+    '''Calculate stresses and invariants given a strain tensor and elastic
+       moduli lambda and mu.
+
+       Returns a dict S with the stress components and invariants.
+    '''
+
+    
+    S['xx'] = 2 * mu * E['xx'] + lamda * (E['xx']+E['yy']+E['zz'])
+    S['yy'] = 2 * mu * E['yy'] + lamda * (E['xx']+E['yy']+E['zz'])
+    S['zz'] = 2 * mu * E['zz'] + lamda * (E['xx']+E['yy']+E['zz'])
+    S['xy'] = 2 * mu * E['xy']
+    S['xz'] = 2 * mu * E['xz']
+    S['yz'] = 2 * mu * E['yz']
+    
+    S['I1'] = S['xx'] + S['yy'] + S['zz']
+    S['I2'] = (-(S['xx'] * S['yy'] + S['yy'] * S['zz'] + S['xx'] * S['zz']) + 
+               S['xy'] * S['xy'] + S['xz'] * S['xz'] + S['yz'] * S['yz'])
+    S['I3'] = (S['xx'] * S['yy'] * S['zz'] + 2 * S['xy'] * S['xz'] * S['yz'] - 
+               (S['xx'] * S['yz'] * S['yz'] + S['yy'] * S['xz'] * S['xz'] + 
+                S['zz'] * S['xy'] * S['xy']))
+
+    return S
