@@ -65,7 +65,11 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
 
     '''
 
-    slip_vec = calc_slip_vector(x, y, z, ss, ts, ds)
+    xx = np.copy(x)
+    yy = np.copy(y)
+    zz = np.copy(z)
+
+    slip_vec = calc_slip_vector(xx, yy, zz, ss, ts, ds)
 
     E = {
         'xx': np.zeros(len(sx)),
@@ -76,15 +80,15 @@ def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None,
         'yz': np.zeros(len(sx))
     }
 
-    x = np.append(x, x[0]) # for indexing during loops
-    y = np.append(y, y[0])
-    z = np.append(z, z[0])
+    xx = np.append(xx, xx[0]) # for indexing during loops
+    yy = np.append(yy, yy[0])
+    zz = np.append(zz, zz[0])
 
     for i_tri in [0, 1, 2]:
-        strike, dip, beta, lss, lts, lds = get_edge_params(i_tri, x, y, z, 
+        strike, dip, beta, lss, lts, lds = get_edge_params(i_tri, xx, yy, zz, 
                                                           slip_vec)
         
-        e = get_edge_strains(sx, sy, sz, x, y, z, i_tri, beta, pr, lss, lts,
+        e = get_edge_strains(sx, sy, sz, xx, yy, zz, i_tri, beta, pr, lss, lts,
                              lds, strike)
 
         E['xx'] += e['11']
@@ -132,7 +136,12 @@ def calc_tri_displacements(sx=None, sy=None, sz=None, x=None, y=None, z=None,
 
     '''
 
-    slip_vec = calc_slip_vector(x, y, z, ss, ts, ds)
+    xx = np.copy(x)
+    yy = np.copy(y)
+    zz = np.copy(z)
+
+
+    slip_vec = calc_slip_vector(xx, yy, zz, ss, ts, ds)
 
     U = {
         'x': np.zeros(len(sx)),
@@ -140,22 +149,22 @@ def calc_tri_displacements(sx=None, sy=None, sz=None, x=None, y=None, z=None,
         'z': np.zeros(len(sx))
     }
 
-    x = np.append(x, x[0]) # for indexing during loops
-    y = np.append(y, y[0])
-    z = np.append(z, z[0])
+    xx = np.append(xx, xx[0]) # for indexing during loops
+    yy = np.append(yy, yy[0])
+    zz = np.append(zz, zz[0])
 
     for i_tri in [0, 1, 2]:
-        strike, dip, beta, lss, lts, lds = get_edge_params(i_tri, x, y, z, 
+        strike, dip, beta, lss, lts, lds = get_edge_params(i_tri, xx, yy, zz, 
                                                            slip_vec)
         
-        uxn, uyn, uzn= get_edge_displacements(sx, sy, sz, x, y, z, i_tri, beta, 
-                                              pr, lss, lts, lds, strike)
+        uxn, uyn, uzn= get_edge_displacements(sx, sy, sz, xx, yy, zz, i_tri, 
+                                              beta, pr, lss, lts, lds, strike)
 
         U['x'] += uxn
         U['y'] += uyn
         U['z'] += uzn
 
-    U = offset_underlying_points(x, y, z, sx, sy, sz, slip_vec, U)
+    U = offset_underlying_points(xx, yy, zz, sx, sy, sz, slip_vec, U)
 
     return U
 
@@ -169,7 +178,6 @@ def calc_slip_vector(x, y, z, ss=0., ts=0., ds=0.):
 
     norm_vec = np.cross( (v1 - v0), (v2 - v0))
     norm_vec = norm_vec / np.linalg.norm(norm_vec)
-
 
     if norm_vec[2] < 0: # Enforce clockwise circulation
         norm_vec *= -1
