@@ -1,16 +1,15 @@
-import sys; sys.path.append('../tde/')
+import sys; sys.path.append('../tde')
 import numpy as np
 import matplotlib.pyplot as plt
 import tde
 
-from importlib import reload
-reload(tde)
-
 # tri dislocation parameters
 pr = 0.25
-ss = -1.
+#ss = -1.
+ss = 0.
 ts = 0.
-ds = 0.
+ds = -1.
+#ds = 0.
 N = 30
 
 sx, sy, sz = np.meshgrid( np.linspace(0, 100, N), np.linspace(0, 100, N), 0)
@@ -28,10 +27,7 @@ S = tde.calc_tri_strains(sxr, syr, szr, X, Y, Z, pr, ss, ts, ds)
 U = tde.calc_tri_displacements(sxr, syr, szr, X, Y, Z, pr, ss, ts, ds)
 
 
-plt.figure()
+#plt.figure()
+#plt.quiver(sxr, syr, U['x'], U['y'])
 
-plt.gca().add_patch(plt.Polygon( np.array([X,Y]).T))
-
-plt.quiver(sxr, syr, U['x']*0.5, U['y']*0.5)
-
-plt.show()
+#plt.show()

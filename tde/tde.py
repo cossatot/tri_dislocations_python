@@ -19,14 +19,6 @@ directly from Meade's code, or is a guess of mine what is going on.
 Ported by Richard Styron, 2015
 '''
 
-#Vec = namedtuple('Vec', ['xx','yy','zz','xy','xz','yz'])
-
-def swap(a, b):
-    b, a  =  a, b
-
-    return b, a
-
-
 def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None, 
                      z=None, pr=0.25, ss=0., ts=0., ds=0.):
     '''
@@ -157,7 +149,7 @@ def calc_tri_displacements(sx=None, sy=None, sz=None, x=None, y=None, z=None,
         strike, dip, beta, lss, lts, lds = get_edge_params(i_tri, xx, yy, zz, 
                                                            slip_vec)
         
-        uxn, uyn, uzn= get_edge_displacements(sx, sy, sz, xx, yy, zz, i_tri, 
+        uxn, uyn, uzn = get_edge_displacements(sx, sy, sz, xx, yy, zz, i_tri, 
                                               beta, pr, lss, lts, lds, strike)
 
         U['x'] += uxn
@@ -171,12 +163,32 @@ def calc_tri_displacements(sx=None, sy=None, sz=None, x=None, y=None, z=None,
 
 
 def calc_slip_vector(x, y, z, ss=0., ts=0., ds=0.):
+    '''
+    Calculates a 3D slip vector for displacement on a triangle, given
+    strike-slip, tensile-slip and dip-slip displacement components.
+
+    Arguments
+     x  : x-coordinates of triangle vertices.
+     y  : y-coordinates of triangle vertices.
+     z  : z-coordinates of triangle vertices.
+     ss : strike slip displacement
+     ts : tensile slip displacement
+     ds : dip slip displacement
+
+
+    Note: Will modify the ordering of triangle coordinates variables passed,
+    even outside of the function scope, if 'clockwise circulation' does not
+    hold. If this function is used outside of `calc_tri_displacement` or
+    `calc_tri_strains`, make sure to send it a copy of the triangle coordinate
+    variables instead of the original, or strange bugs could result.
+    '''
     # Calculate the slip vector in XYZ coordinates
     v0 = np.array([x[0], y[0], z[0]])
     v1 = np.array([x[1], y[1], z[1]])
     v2 = np.array([x[2], y[2], z[2]])
 
     norm_vec = np.cross( (v1 - v0), (v2 - v0))
+
     norm_vec = norm_vec / np.linalg.norm(norm_vec)
 
     if norm_vec[2] < 0: # Enforce clockwise circulation
@@ -187,10 +199,16 @@ def calc_slip_vector(x, y, z, ss=0., ts=0., ds=0.):
 
     strike_vec = np.array([-np.sin( np.arctan2( norm_vec[1], norm_vec[0])),
                             np.cos( np.arctan2( norm_vec[1], norm_vec[0])), 0])
+    
     dip_vec = np.cross( norm_vec, strike_vec)
+    
     slip_comp = np.array([ss, ds, ts])
-    slip_vec = np.array([strike_vec.ravel(order='F'), dip_vec.ravel(order='F'), 
-                         norm_vec.ravel(order='F')]).dot(slip_comp)
+    
+    fault_mat = np.array([[strike_vec[0], dip_vec[0], norm_vec[0]],
+                          [strike_vec[1], dip_vec[1], norm_vec[1]],
+                          [strike_vec[2], dip_vec[2], norm_vec[2]]])
+
+    slip_vec = fault_mat.dot(slip_comp)
 
     return slip_vec
 
