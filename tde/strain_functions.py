@@ -2,28 +2,6 @@ from __future__ import division
 from numpy import sin, cos, pi, tan
 
 
-#try:
-#    import numexpr as ne
-#    ne_flag = True
-#except ImportError:
-#    ne_flag = False
-#    pass
-
-try:
-    from numba import jit, vectorize, float64
-    nu_flag = True
-except:
-    nu_flag = False
-    pass
-
-try:
-    from numbapro import jit, vectorize, float64
-    nb_flag = True
-except:
-    nb_flag = False
-    pass
-
-
 def advs(y1, y2, y3, a, b, nu, B1, B2, B3):
 
     A = {}
@@ -36,9 +14,6 @@ def advs(y1, y2, y3, a, b, nu, B1, B2, B3):
     A['23'] = e23(y1, y2, y3, a, b, nu, B1, B2, B3)
 
     return A
-
-if nb_flag == True:
-    pass
 
 
 def e11(y1, y2, y3, a, b, nu, B1, B2, B3):

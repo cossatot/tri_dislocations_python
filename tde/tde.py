@@ -379,6 +379,8 @@ def strain_to_stress(E, lamda, mu):
        Returns a dict S with the stress components and invariants.
     '''
 
+    S = {}
+
     
     S['xx'] = 2 * mu * E['xx'] + lamda * (E['xx']+E['yy']+E['zz'])
     S['yy'] = 2 * mu * E['yy'] + lamda * (E['xx']+E['yy']+E['zz'])
