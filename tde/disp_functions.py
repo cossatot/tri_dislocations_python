@@ -6,6 +6,7 @@ import numpy as np
 def adv(y1, y2, y3, a, beta, nu, B1, B2, B3):
 
     if (np.abs(beta) > 0.000001) and (np.abs(beta - pi) > 0.000001):
+        # tolerance hard-coded to match Meade
 
         # initialize some variables
         sinbeta = sin(beta)
