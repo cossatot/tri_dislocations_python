@@ -239,9 +239,6 @@ def get_edge_params(i_tri, x, y, z, slip_vec):
         if beta < (-np.pi/2.):
             beta = np.pi/2. - np.abs(beta)
 
-    if beta == 0.0:
-        beta = eps
-
     ss_vec = np.array([ np.cos(strike_rad), np.sin(strike_rad), 0.])
     ts_vec = np.array([-np.sin(strike_rad), np.cos(strike_rad), 0.])
     ds_vec = np.cross(ss_vec, ts_vec)
