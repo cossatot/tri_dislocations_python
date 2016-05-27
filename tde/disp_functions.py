@@ -4,7 +4,6 @@ import numpy as np
 
 
 def adv(y1, y2, y3, a, beta, nu, B1, B2, B3): 
-    
 
     # initialize some variables
     sinbeta = sin(beta)

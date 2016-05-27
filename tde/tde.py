@@ -19,6 +19,9 @@ directly from Meade's code, or is a guess of mine what is going on.
 Ported by Richard Styron, 2015
 '''
 
+
+eps = 7./3 - 4./3 - 1 # get machine epsilon
+
 def calc_tri_strains(sx=None, sy=None, sz=None, x=None, y=None, 
                      z=None, pr=0.25, ss=0., ts=0., ds=0.):
     '''
@@ -235,6 +238,9 @@ def get_edge_params(i_tri, x, y, z, slip_vec):
         beta = -np.pi/180. * (90. + dip)
         if beta < (-np.pi/2.):
             beta = np.pi/2. - np.abs(beta)
+
+    if beta == 0.0:
+        beta = eps
 
     ss_vec = np.array([ np.cos(strike_rad), np.sin(strike_rad), 0.])
     ts_vec = np.array([-np.sin(strike_rad), np.cos(strike_rad), 0.])
