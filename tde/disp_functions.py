@@ -3,44 +3,51 @@ from numpy import sin, cos, tan, pi, log
 import numpy as np
 
 
-def adv(y1, y2, y3, a, beta, nu, B1, B2, B3): 
+def adv(y1, y2, y3, a, beta, nu, B1, B2, B3):
 
-    # initialize some variables
-    sinbeta = sin(beta)
-    cosbeta = cos(beta)
-    cotbeta = 1. / tan(beta)
+    if (np.abs(beta) > 0.000001) and (np.abs(beta - pi) > 0.000001):
 
-    z1 = y1 * cosbeta - y3 * sinbeta
-    z3 = y1 * sinbeta + y3 * cosbeta
-    R2 = y1**2 + y2**2 + y3**2
-    R = np.sqrt(R2)
-    y3bar = y3 + 2. * a
-    z1bar = y1 * cosbeta + y3bar * sinbeta
-    z3bar = -y1 * sinbeta + y3bar * cosbeta
-    R2bar = y1**2 + y2**2 + y3bar**2
-    Rbar = np.sqrt(R2bar)
+        # initialize some variables
+        sinbeta = sin(beta)
+        cosbeta = cos(beta)
+        cotbeta = 1. / tan(beta)
 
-    F = (-np.arctan2(y2, y1) + np.arctan2(y2, z1) + 
-         np.arctan2( (y2 * R * sinbeta), (y1 * z1 + (y2**2) * cosbeta)))
-    Fbar = (-np.arctan2(y2, y1) + np.arctan2(y2, z1bar) + 
-            np.arctan2( (y2 * Rbar * sinbeta), 
-                        (y1 * z1bar + (y2**2) * cosbeta)))
+        z1 = y1 * cosbeta - y3 * sinbeta
+        z3 = y1 * sinbeta + y3 * cosbeta
+        R2 = y1**2 + y2**2 + y3**2
+        R = np.sqrt(R2)
+        y3bar = y3 + 2. * a
+        z1bar = y1 * cosbeta + y3bar * sinbeta
+        z3bar = -y1 * sinbeta + y3bar * cosbeta
+        R2bar = y1**2 + y2**2 + y3bar**2
+        Rbar = np.sqrt(R2bar)
 
-    v1B1, v2B1, v3B1 = burgers_100(y1, y2, y3, a, beta, nu, sinbeta, cosbeta,
-                                   cotbeta, z1, z3, R, y3bar, z1bar, z3bar,
-                                   Rbar, F, Fbar)
+        F = (-np.arctan2(y2, y1) + np.arctan2(y2, z1) + 
+             np.arctan2( (y2 * R * sinbeta), (y1 * z1 + (y2**2) * cosbeta)))
+        Fbar = (-np.arctan2(y2, y1) + np.arctan2(y2, z1bar) + 
+                np.arctan2( (y2 * Rbar * sinbeta), 
+                            (y1 * z1bar + (y2**2) * cosbeta)))
 
-    v1B2, v2B2, v3B2 = burgers_010(y1, y2, y3, a, beta, nu, sinbeta, cosbeta,
-                                   cotbeta, z1, z3, R, y3bar, z1bar, z3bar,
-                                   Rbar, F, Fbar)
+        v1B1, v2B1, v3B1 = burgers_100(y1, y2, y3, a, beta, nu, sinbeta,
+                                       cosbeta, cotbeta, z1, z3, R, y3bar,
+                                       z1bar, z3bar, Rbar, F, Fbar)
 
-    v1B3, v2B3, v3B3 = burgers_001(y1, y2, y3, a, beta, nu, sinbeta, cosbeta,
-                                   cotbeta, z1, z3, R, y3bar, z1bar, z3bar,
-                                   Rbar, F, Fbar)
+        v1B2, v2B2, v3B2 = burgers_010(y1, y2, y3, a, beta, nu, sinbeta,
+                                       cosbeta, cotbeta, z1, z3, R, y3bar,
+                                       z1bar, z3bar, Rbar, F, Fbar)
 
-    v1 = B1 * v1B1 + B2 * v1B2 + B3 * v1B3
-    v2 = B1 * v2B1 + B2 * v2B2 + B3 * v2B3
-    v3 = B1 * v3B1 + B2 * v3B2 + B3 * v3B3
+        v1B3, v2B3, v3B3 = burgers_001(y1, y2, y3, a, beta, nu, sinbeta,
+                                       cosbeta, cotbeta, z1, z3, R, y3bar,
+                                       z1bar, z3bar, Rbar, F, Fbar)
+
+        v1 = B1 * v1B1 + B2 * v1B2 + B3 * v1B3
+        v2 = B1 * v2B1 + B2 * v2B2 + B3 * v2B3
+        v3 = B1 * v3B1 + B2 * v3B2 + B3 * v3B3
+
+    else:
+        v1 = 0.
+        v2 = 0.
+        v3 = 0.
 
     return v1, v2, v3
 
