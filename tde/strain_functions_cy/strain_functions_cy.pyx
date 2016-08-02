@@ -3,8 +3,30 @@ import numpy as np
 cimport numpy as np
 cimport cython
 from libc.math cimport sin, cos, tan, M_PI
-#from numpy import sin, cos, tan
-#import numpy.pi as M_PI
+
+def advs(y1, y2, y3, a, b, nu, B1, B2, B3):
+
+    A = {} 
+
+    if (np.abs(b) > 0.000001) and (np.abs(b - np.pi) > 0.000001):
+        # tolerance hard-coded to match Meade
+
+        A['11'] = e11(y1, y2, y3, a, b, nu, B1, B2, B3)
+        A['22'] = e22(y1, y2, y3, a, b, nu, B1, B2, B3)
+        A['33'] = e33(y1, y2, y3, a, b, nu, B1, B2, B3)
+        A['12'] = e12(y1, y2, y3, a, b, nu, B1, B2, B3)
+        A['13'] = e13(y1, y2, y3, a, b, nu, B1, B2, B3)
+        A['23'] = e23(y1, y2, y3, a, b, nu, B1, B2, B3)
+    else:
+
+        A['11'] = 0.
+        A['22'] = 0.
+        A['33'] = 0.
+        A['12'] = 0.
+        A['13'] = 0.
+        A['23'] = 0.
+
+    return A
 
 #@cython.nonecheck(False)
 #@cython.cdivision(True)
