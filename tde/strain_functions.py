@@ -1,12 +1,13 @@
 from __future__ import division
 from numpy import sin, cos, pi, tan
+import numpy as np
 
 
 def advs(y1, y2, y3, a, b, nu, B1, B2, B3):
 
-    A = {}
+    A = {} 
 
-    if (np.abs(b) > 0.000001) and (np.abs(beta - pi) > 0.000001):
+    if (np.abs(b) > 0.000001) and (np.abs(b - pi) > 0.000001):
         # tolerance hard-coded to match Meade
 
         A['11'] = e11(y1, y2, y3, a, b, nu, B1, B2, B3)
@@ -388,6 +389,7 @@ def e11(y1, y2, y3, a, b, nu, B1, B2, B3):
                         2)-y1 * sin(b)+(y3+2 * a) * cos(b)) * a /
                 (y1**2+y2**2+(y3+2 * a)**2)**(3 / 2) * y1-2 * a * (y3+2 * a) /
                 (y1**2+y2**2+(y3+2 * a)**2)**2 * y1)) / pi / (1-nu)))
+
     return e11
 
 def e22(y1, y2, y3, a, b, nu, B1, B2, B3):
