@@ -27,7 +27,15 @@ science).
 ### Installation
 
 `tde` only requires `numpy` and the standard Python library. It is tested on
-Python 3.4 but should run on any system.
+Python 3.4 but should run on any system. It optionally uses `cython` which
+greatly increases the speed of many of the strain calculations.
+
+#### Building Cython files
+run `python setup.py build_ext --inplace` in the outer `tri_dislocations_python`
+directory.
+
+
+### Installation
 
 Run `python setup.py install` in the outer `tri_dislocations_python` directory
 to install it system-wide. 

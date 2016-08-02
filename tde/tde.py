@@ -2,8 +2,12 @@ from __future__ import division
 import numpy as np
 from numpy import sin, cos, pi
 
-import strain_functions as sf
 import disp_functions as df
+
+try:
+    import strain_functions_cy as sf
+except ImportError:
+    import strain_functions as sf
 
 
 '''
