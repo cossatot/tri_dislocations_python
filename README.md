@@ -22,6 +22,20 @@ sequential arithmetic operations on floats (i.e., still good enough for earth
 science).
 
 
+## Citations
+
+First off, Brendan Meade did all of the work in developing the mathematical
+model and writing the MATLAB code that this is based on.  Please cite Meade (2007)
+as referenced in the first paragraph of this readme.
+
+If you're really generous you can also cite this repository, using this DOI and
+my name (Richard Styron).
+[![DOI](https://zenodo.org/badge/41379836.svg)](https://zenodo.org/badge/latestdoi/41379836)
+
+The citation would look something like:
+
+Styron, R., 2019, tri_dislocations_python, *Zenodo*, https://github.com/cossatot/tri_dislocations_python, DOI: 10.5281/zenodo.3368513
+
 ## Usage
 
 ### Installation
